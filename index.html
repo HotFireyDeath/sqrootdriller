@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <title>SqRootDriller</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="skeleton/normalize.css">
+        <link rel="stylesheet" href="skeleton/skeleton.css">
+        <link rel="stylesheet" href="animatecss/animate.css">
+        <link rel="stylesheet" href="notie/notie.css">
+        <script>
+            localStorage.removeItem("asw");
+            
+            localStorage.setItem("countdown", "10");
+            localStorage.setItem("drills_begun", "false");
+            localStorage.setItem("correct_questions", "0");
+            
+            function beginDrills(){
+                
+                localStorage.setItem("drills_begun", "true");
+                
+                $("#menu_prompt").hide();
+                $("#drill_prompt").show();
+                
+                var up_to_point = parseInt($("#up_to_point").val());
+                if (isNaN(up_to_point)){
+                    notie.alert(3, "Please enter a valid point number.", 2);
+                    return;
+                }
+                var base_number_array = []; //[1, 2, 3, etc.. to the up_to_point number.]
+                for (var i = 0; i <= up_to_point; i++){
+                    base_number_array.push(i);
+                }
+                var random = Math.floor((Math.random() * up_to_point) + 1); //random number.
+                var drilltype = Math.floor((Math.random() * 2) + 1);
+                if (drilltype == 1){
+                    // What is the square root of big number.
+                    // Example: sqrt(324) = ?
+                    document.getElementById("drill_question").innerHTML = "What is the square root of " + (random * random) + "?";
+                    localStorage.setItem("asw", window.btoa(random));
+                }
+                else{
+                    // What is the square of the number.
+                    // Example: 4^2 = ?
+                    document.getElementById("drill_question").innerHTML = "What is the square of " + random + "?";
+                    localStorage.setItem("asw", window.btoa((random * random)));
+                }
+            }
+            
+            function answerDrill(){
+                var answer = parseInt($("#answer").val());
+                if (isNaN(answer)){
+                    notie.alert(3, "Not a valid answer. Try again.", 2);
+                    return;
+                }
+                var real_answer = parseInt(window.atob(localStorage.getItem("asw")));
+                if (answer != real_answer){
+                    notie.alert(3, "Wrong answer! (-3 seconds)", 0.3);
+                    localStorage.setItem("countdown", String( parseInt(localStorage.getItem("countdown")) - 3 ));
+                }
+                else{
+                    notie.alert(1, "Nice one!", 0.3);
+                    localStorage.setItem("countdown", String( parseInt(localStorage.getItem("countdown")) + 5 ));
+                    localStorage.setItem("correct_questions", String( parseInt(localStorage.getItem("correct_questions")) + 1 ));
+                    beginDrills();
+                }
+                document.getElementById("answerf").reset();
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div id="menu_prompt">
+                <br>
+                <h2 class="animated fadeIn">SqRootDriller <small>v1.0.0</small></h2>
+                <form onsubmit="beginDrills();" action="javascript:void(0);">
+                    <div class="animated fadeIn" style="-webkit-animation-delay: 0.4s;">
+                        <label for="up_to_point">Highest Point Number</label>
+                        <input class="u-full-width" id="up_to_point" type="text">
+                    </div>
+                    <button class="button button-default animated fadeIn" style="-webkit-animation-delay: 0.6s;">Start Drills</button>
+                </form>
+            </div>
+            <div id="drill_prompt" style="display: none;">
+                <br>
+                <small id="time_remain">Time remaining: 0s;</small>
+                <h2 class="animated fadeIn" id="drill_question">Question</h2>
+                <form onsubmit="answerDrill();" action="javascript:void(0);" id="answerf">
+                    <div class="animated fadeIn" style="-webkit-animation-delay: 0.4s;">
+                        <label for="answer">Your Input</label>
+                        <input class="u-full-width" id="answer" type="text">
+                    </div>
+                    <button class="button button-default animated fadeIn" style="-webkit-animation-delay: 0.6s;">Answer Question</button>
+                </form>
+            </div>
+        </div>
+        <center class="animated fadeIn" style="-webkit-animation-delay: 1s;"><small>Created by <a href="http://bit.ly/c-software">@HotFireyDeath</a>.</small></center>
+        <script src="notie/notie.js"></script>
+    </body>
+    
+    <script>
+        window.setInterval(function(){
+            if (localStorage.getItem("drills_begun") == "true"){
+                var countdown = parseInt(localStorage.getItem("countdown"));
+                if (countdown > 10){
+                    localStorage.setItem("countdown", "10");
+                    return;
+                }
+                localStorage.setItem("countdown", String(countdown - 1));
+                if (countdown <= 0){
+                    notie.alert(4, "Your time is up! Correct: " + localStorage.getItem("correct_questions"));
+                    $("#drill_prompt").hide();
+                    $("#menu_prompt").show();
+                    localStorage.removeItem("asw");
+                    localStorage.setItem("countdown", "10");
+                    localStorage.setItem("drills_begun", "false");
+                    localStorage.setItem("correct_questions", "0");
+                    return;
+                }
+                document.getElementById("time_remain").innerHTML = "Time remaining: " + countdown + "s";
+            }
+        }, 1000);
+    </script>
+</html>
